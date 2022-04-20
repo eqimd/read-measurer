@@ -1,7 +1,7 @@
 #include <stdint.h>
 
-void measure_fread(char** filenames, int count, int read_chunk_size, uint64_t* stat_array);
-void measure_read(char** filenames, int count, int read_chunk_size, uint64_t* stat_array);
-void measure_ifstream(char** filenames, int count, int read_chunk_size, uint64_t* stat_array);
-void measure_mmap(char** filenames, int count, uint64_t* stat_array);
-void measure_readv(char** filenames, int count, int read_chunk_size, uint64_t* stat_array);
+uint64_t measure_fread(char* fn, int read_chunk_size, uint64_t* stat_array);
+uint64_t measure_read(char* fn, int read_chunk_size, uint64_t* stat_array);
+uint64_t measure_ifstream(char* fn, int read_chunk_size, uint64_t* stat_array);
+uint64_t measure_mmap(char* fn, uint64_t* stat_array);
+uint64_t measure_readv(char* fn, int read_chunk_size, uint64_t* stat_array);
