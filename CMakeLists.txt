@@ -1,13 +1,15 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(rw-measurer)
+project(read-measurer)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
-include_directories()
+include_directories("src")
 
 add_executable(
-        rw-measurer
+        ${PROJECT_NAME}
         main.cpp
+        src/util.cpp
+        src/util.h
 )
