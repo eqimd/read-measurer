@@ -50,6 +50,7 @@ void measure_fread(char** filenames, int count, int read_chunk_size, uint64_t* s
         auto t_end = std::chrono::high_resolution_clock::now();
 
         if (ferror(fptr) != 0) {
+            fclose(fptr);
             throw std::runtime_error(
                 "Error while reading file " +
                 std::string(fn) + ": " +
@@ -79,6 +80,7 @@ void measure_read(char** filenames, int count, int read_chunk_size, uint64_t* st
         struct stat statbuf = {};
         errno = 0;
         if (fstat(fd, &statbuf) != 0) {
+            close(fd);
             throw std::runtime_error(strerror(errno));
         }
 
@@ -100,6 +102,7 @@ void measure_read(char** filenames, int count, int read_chunk_size, uint64_t* st
                 case EINTR:
                     continue;
                 default:
+                    close(fd);
                     throw std::runtime_error(
                         "Something wrong with file " +
                         std::string(fn) + ": " +
@@ -108,6 +111,7 @@ void measure_read(char** filenames, int count, int read_chunk_size, uint64_t* st
                 }
             }
             else if (readed == 0) {
+                close(fd);
                 throw std::runtime_error(
                     "File " + std::string(fn) +
                     " trunkated! Current size: " + std::to_string(current_size) +
@@ -161,6 +165,7 @@ void measure_mmap(char** filenames, int count, uint64_t* stat_array) {
         struct stat statbuf = {};
         errno = 0;
         if (fstat(fd, &statbuf) != 0) {
+            close(fd);
             throw std::runtime_error(strerror(errno));
         }
 
@@ -170,17 +175,19 @@ void measure_mmap(char** filenames, int count, uint64_t* stat_array) {
         errno = 0;
         void* mapped_ptr = mmap(NULL, fsize, PROT_READ, MAP_SHARED, fd, 0);
         if (mapped_ptr == MAP_FAILED) {
+            close(fd);
             throw std::runtime_error(
                 "Error while mapping file " +
                 std::string(fn) + ": " +
                 std::string(strerror(errno))
             );
         }
-        for (int i = 0; i < fsize; ++i) {}
+        const char* casted_ptr = reinterpret_cast<const char*>(mapped_ptr);
         auto t_end = std::chrono::high_resolution_clock::now();
         stat_array[i] = std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_start).count();
 
         munmap(mapped_ptr, fsize);
+        close(fd);
     }
 }
 
@@ -201,6 +208,7 @@ void measure_readv(char** filenames, int count, int read_chunk_size, uint64_t* s
         struct stat statbuf = {};
         errno = 0;
         if (fstat(fd, &statbuf) != 0) {
+            close(fd);
             throw std::runtime_error(strerror(errno));
         }
 
@@ -221,6 +229,7 @@ void measure_readv(char** filenames, int count, int read_chunk_size, uint64_t* s
         errno = 0;
         ssize_t readed = readv(fd, iov.data(), iov_cnt);
         if (readed == -1) {
+            close(fd);
             throw std::runtime_error(
                 "Error while reading file " +
                 std::string(fn) + ": " +
